@@ -1,0 +1,73 @@
+name: BuildDockerImage
+
+on:
+  push:
+    branches: [ master, main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Set current date as env variable
+        run: echo "IMAGETIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3.0.0
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            latest
+            ${{ env.IMAGETIMESTAMP }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5.0.0
+        with:
+          context: ./
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Notify teams channel on failure
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1.3
+        with:
+            github-token: ${{ github.token }}
+            ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
+            notification-summary: "${{ github.repository }} - Build succeeded 😊 - ${{ env.IMAGETIMESTAMP }}"
+            notification-color: 008800
+            timezone: America/Regina
+
+      - name: Notify teams channel on success
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1.3
+        with:
+            github-token: ${{ github.token }}
+            ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
+            notification-summary: "⚠️ ${{ github.repository }} - Build FAILED ☹️"
+            notification-color: FF0000
+            timezone: America/Regina

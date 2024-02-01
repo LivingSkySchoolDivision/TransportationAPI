@@ -1,0 +1,52 @@
+name: CheckDockerImage
+
+on:
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Set current date as env variable
+        run: echo "IMAGETIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3.0.0
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5.0.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            latest
+            ${{ env.IMAGETIMESTAMP }}
+            
+      - name: Build Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5.0.0
+        with:
+          context: ./
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Notify teams channel on success
+        uses: jdcargile/ms-teams-notification@v1.3
+        with:
+            github-token: ${{ github.token }}
+            ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK }}
+            notification-summary: "📎 ${{ github.repository }} - New pull request ready for review"
+            notification-color: FF0000
+            timezone: America/Regina
