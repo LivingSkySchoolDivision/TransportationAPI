@@ -20,6 +20,13 @@ app.MapGet("/", context =>
 });
 #pragma warning restore ASP0016 // Do not return a value from RequestDelegate
 
+app.MapGet("/ping", () =>
+    {
+        return "Pong";
+    })
+    .WithName("GetPing")
+    .WithOpenApi();
+
 app.MapGet("/OpenWorkOrders", () =>
     {
         WorkOrderRepository WORepo = new WorkOrderRepository(builder.Configuration.GetConnectionString("FleetVision") ?? string.Empty);
