@@ -1,6 +1,3 @@
-
-
-
 using System.Data.Common;
 using System.Data.SqlClient;
 
@@ -26,7 +23,7 @@ public class WorkOrderRepository
                                 Lists_Status.Item != 'Completed'
                                 AND WorkOrders.CreatedTime IS NOT NULL
                                 AND WorkRequested IS NOT NULL
-                            ".Replace(Environment.NewLine, "");
+                            ".Replace(Environment.NewLine, "").Trim();
 
     public WorkOrderRepository(string DBConnectionString)
     {
@@ -37,14 +34,14 @@ public class WorkOrderRepository
     {
         return new WorkOrder()
         {
-            Id = Parsers.ParseInt(reader["Id"].ToString().Trim()),
-            Number = reader["Number"].ToString().Trim(),
-            Status = reader["Status"].ToString().Trim(),
-            WorkRequested = reader["WorkRequested"].ToString().Trim(),
-            VehicleNumber = reader["VehicleNumber"].ToString().Trim(),
-            Created = Parsers.ParseDate(reader["Created"].ToString().Trim()),
-            LastUpdated = Parsers.ParseDate(reader["LastUpdated"].ToString().Trim()),
-            Priority = reader["Priority"].ToString().Trim()
+            Id = Parsers.ParseInt(Parsers.ParseSQLReaderValue(reader, "Id")),
+            Number = Parsers.ParseSQLReaderValue(reader, "Number"),
+            Status = Parsers.ParseSQLReaderValue(reader, "Status"),
+            WorkRequested = Parsers.ParseSQLReaderValue(reader, "WorkRequested"),
+            VehicleNumber = Parsers.ParseSQLReaderValue(reader, "VehicleNumber"),
+            Created = Parsers.ParseDate(Parsers.ParseSQLReaderValue(reader, "Created")),
+            LastUpdated = Parsers.ParseDate(Parsers.ParseSQLReaderValue(reader, "LastUpdated")),
+            Priority = Parsers.ParseSQLReaderValue(reader, "Priority")
         };
     }
 

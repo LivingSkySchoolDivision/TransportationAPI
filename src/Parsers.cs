@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 
@@ -127,5 +128,26 @@ public static class Parsers
     public static string StripInvalidJSONCharacters(string thisString)
     {
         return thisString.Replace("<", "&nbsp;");
+    }
+
+    public static string ParseSQLReaderValue(SqlDataReader Reader, string FieldName) 
+    {
+        if (Reader == null) 
+        {
+            return string.Empty;
+        }  
+
+        if (string.IsNullOrEmpty(FieldName))
+        {
+            return string.Empty;
+        }
+
+        if (Reader[FieldName] == null) 
+        {
+            return string.Empty;
+        }
+
+        string returnValue = Reader[FieldName].ToString() ?? string.Empty;
+        return returnValue.Trim();
     }
 }

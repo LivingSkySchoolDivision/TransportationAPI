@@ -28,4 +28,51 @@ app.MapGet("/OpenWorkOrders", () =>
     .WithName("GetOpenWorkOrders")
     .WithOpenApi();
 
+app.MapGet("/BusInspections", () =>
+    {
+        BusInspectionRepository BIRepo = new BusInspectionRepository(builder.Configuration.GetConnectionString("VersaTrans") ?? string.Empty);
+        return BIRepo.GetAllBusInspections().OrderBy(x => x.Expiration);
+    })
+    .WithName("GetBusInspections")
+    .WithOpenApi();
+
+app.MapGet("/BusInspections/{year}/{month}",(int year, int month) =>
+    {
+        BusInspectionRepository BIRepo = new BusInspectionRepository(builder.Configuration.GetConnectionString("VersaTrans") ?? string.Empty);
+
+        if (
+            (year > 0)
+            && (year < DateTime.MaxValue.Year)
+            && (month > 0)
+            && (month <= 12)
+            )
+        {
+            return BIRepo.GetAllBusInspections().Where(x => x.Expiration.Month == month && x.Expiration.Year == year).OrderByDescending(x => x.Expiration).ToList<BusInspection>();
+        } else {
+            return new List<BusInspection>();
+        }
+    })
+    .WithName("GetBusInspectionsByMonth")
+    .WithOpenApi();
+
+app.MapGet("/BusInspections/overdue/{year}/{month}", (int year, int month) =>
+    {
+        BusInspectionRepository BIRepo = new BusInspectionRepository(builder.Configuration.GetConnectionString("VersaTrans") ?? string.Empty);
+
+        if (
+            (year > 0)
+            && (year < DateTime.MaxValue.Year)
+            && (month > 0)
+            && (month <= 12)
+            )
+        {
+            DateTime comparisonDate = new DateTime(year, month, 1);
+            return BIRepo.GetAllBusInspections().Where(x => x.Expiration < comparisonDate).OrderBy(x => x.Expiration).ToList<BusInspection>();
+        } else {
+            return new List<BusInspection>();
+        }
+    })
+    .WithName("GetOverdueBusInspections")
+    .WithOpenApi();
+
 app.Run();
