@@ -22,7 +22,7 @@ app.MapGet("/", context =>
 
 app.MapGet("/OpenWorkOrders", () =>
     {
-        WorkOrderRepository WORepo = new WorkOrderRepository(ConnectionString_FleetVision);
+        WorkOrderRepository WORepo = new WorkOrderRepository(builder.Configuration.GetConnectionString("FleetVision") ?? string.Empty);
         return WORepo.GetOpenWorkOrders().OrderBy(x => x.Created);
     })
     .WithName("GetOpenWorkOrders")
