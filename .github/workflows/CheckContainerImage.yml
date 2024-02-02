@@ -1,7 +1,7 @@
 name: CheckContainerImage
 
 on:
-  push:
+  pull_request:
     branches: [ master, main ]
 
 env:
