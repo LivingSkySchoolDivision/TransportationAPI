@@ -1,7 +1,7 @@
-name: CheckDockerImage
+name: CheckContainerImage
 
 on:
-  pull_request:
+  push:
     branches: [ master, main ]
 
 env:
@@ -9,10 +9,18 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: src/Dockerfile
+            image: ghcr.io/livingskyschooldivision/transportation-api
+            context: ./src/
     permissions:
       contents: read
+      packages: write
       id-token: write
 
     steps:
@@ -29,20 +37,22 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ matrix.image }}
           tags: |
             latest
             ${{ env.IMAGETIMESTAMP }}
-            
-      - name: Build Docker image
+
+      - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v5.0.0
         with:
-          context: ./
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Notify teams channel on success
+        if: ${{ success() }}
         uses: jdcargile/ms-teams-notification@v1.3
         with:
             github-token: ${{ github.token }}
