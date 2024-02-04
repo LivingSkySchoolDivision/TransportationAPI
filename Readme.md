@@ -1,7 +1,9 @@
-# transportation-api
+# TransportationAPI
 An API to pull basic information from several transportation systems at Living Sky School Division, including:
  - Versatrans
  - FleetVision
+
+This API is __read only__ and only provides the small amount of data needed to populate a head-up dashboard of outstanding work.
 
 # Endpoints
 ⚠️ Note that all example data on this page is fictional - driver names and vehicle numbers are fake and for example purposes only.
