@@ -119,3 +119,14 @@ Example output for `BusInspections/overdue/2024/01`:
 ]
 ```
 
+# Building and Deploying
+
+## Required configuration
+This web app requires the following configuration settings passed to it via either a [.Net configuration file](https://learn.microsoft.com/en-us/dotnet/framework/configure-apps/) or via environment variables.
+
+| Connection String Name | Description                                         | Example Value                             |
+|------------------------|-----------------------------------------------------|-------------------------------------------|
+| `FleetVision`          | For FleetVision, which tracks workorders            | `data source=DBSERVER\INSTANCE;initial catalog=fleetvision;user id=USERNAME;password=PASSWORD;Trusted_Connection=false` |
+| `VersaTrans`           | For VersaTrans, which tracks vehicles and drivers   | `data source=DBSERVER\INSTANCE;initial catalog=versatrans;user id=USERNAME;password=PASSWORD;Trusted_Connection=false` |
+
+
